@@ -1,0 +1,94 @@
+<!DOCTYPEhtml>
+<htmllang="en">
+<head>
+<metacharset="UTF-8">
+<metaname="viewport"content="width=device-width,initial-scale=1.0">
+<title>TaskManager</title>
+<style>
+*{ box-sizing:border-box;font-family: 'SegoeUI',Arial, sans-serif;}
+body{ max-width: 600px;margin: 50px auto; padding:20px; background: #f5f5f5;}
+h1{ color: #333; text-align: center; }
+.input-group{ display:flex; gap:10px; margin-bottom: 20px; }
+input[type="text"] {flex: 1; padding:12px; border:2px solid #ddd;border-radius: 6
+button{ padding: 12px 24px; background: #007bff;color:white;border:none; border-radius
+button:hover { background: #0056b3;}
+.task-list{list-style:none;padding: 0;}
+.task-item{background:white;padding: 15px;margin-bottom: 10px;border-radius:6px
+.task-title{ font-weight: bold; color: #333;}
+.task-date{font-size:12px; color: #888;}
+.status{padding: 8px 16px; background: #28a745;color:white;border-radius:20px;
+.status.error {background:#dc3545; }
+.clear-btn{background:#dc3545; margin-top:10px; }
+</style>
+</head>
+<body>
+<h1>￿ Task Manager</h1>
+<div id="status" class="status">Connecting...</div>
+<div class="input-group">
+<input type="text" id="taskInput" placeholder="Enter a new task..." onkeypress="if(event.key==='Enter')addTask()"
+<button onclick="addTask()">Add Task</button>
+</div>
+<ul id="taskList" class="task-list"></ul>
+<button class="clear-btn" onclick="clearTasks()">Clear All Tasks</button>
+
+<script>
+	const API_URL = '/api';
+	async function checkHealth() {
+	try {
+		const res = await fetch('/health');
+		const data = await res.json();
+		document.getElementById('status').textContent = '￿ Connected to API';
+		document.getElementById('status').className = 'status';
+	} catch (error) {
+		document.getElementById('status').textContent = '￿ API Disconnected';
+		document.getElementById('status').className = 'status error';
+	}
+}
+	async function loadTasks() {
+		try {
+			const res = await fetch(`${API_URL}/tasks`);
+			const tasks = await res.json();
+			const list = document.getElementById('taskList');
+			list.innerHTML = tasks.map(task => `
+	<li class="task-item">
+	<div class="task-title">${task.title}</div>
+	<div class="task-date">Created: ${new Date(task.createdAt).toLocaleString
+	</li>
+	`).join('');
+		} catch (error) {
+			console.error('Failed to load tasks:', error);
+		}
+	}
+	asyncfunction addTask(){
+	constinput = document.getElementById('taskInput');
+	consttitle = input.value.trim();
+	if (!title) return;
+
+		try{
+			await fetch(`${API_URL}/tasks`, {
+			method:'POST',
+			headers:{ 'Content-Type':'application/json'},
+			body: JSON.stringify({title})
+		});
+	input.value= '';
+	loadTasks();
+		}catch (error){
+			console.error('Failedtoaddtask:', error);
+	}
+}
+		asyncfunction clearTasks(){
+		if (!confirm('Deletealltasks?')) return;
+		try{
+			await fetch(`${API_URL}/tasks`, {method:'DELETE' });
+			loadTasks();
+		}catch (error){
+			console.error('Failedtocleartasks:', error);
+	}
+}
+	//Initialize
+	checkHealth();
+	loadTasks();
+	setInterval(checkHealth,30000);
+</script>
+</body>
+</html>

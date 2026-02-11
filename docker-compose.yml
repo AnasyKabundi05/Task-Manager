@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+
+#Tier 1: Frontend(Nginx)
+  frontend:
+    build: ./frontend
+    container_name: task-frontend
+    ports: 
+      - "80:80"
+    depends_on: 
+      - backend
+    networks: 
+      - app-network
+    restart: unless-stopped
+
+#Tier 2: Backend API(Node.js)
+  backend:
+    build: ./backend
+    container_name: task-backend
+    environment:
+             - PORT=3000
+             - REDIS_HOST=database
+             - NODE_ENV=production
+    depends_on: 
+      - database
+    networks: 
+      -  app-network
+    restart: unless-stopped
+
+#Tier 3: Database(Redis)
+  database:
+    image: redis:7-alpine
+    container_name: task-database
+    volumes: 
+      - redis-data:/data
+    networks: 
+      - app-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
