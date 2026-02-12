@@ -5,7 +5,7 @@ services:
     build: ./frontend
     container_name: task-frontend
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
     networks:
@@ -14,7 +14,9 @@ services:
 
   # Tier 2: Backend API (Node.js)
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: task-backend
     environment:
       - PORT=3000
@@ -25,7 +27,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    command: ["node", "server.js"]
+    command: ["npm", "start"]
 
   # Tier 3: Database (Redis)
   database:
